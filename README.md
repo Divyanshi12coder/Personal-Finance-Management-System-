@@ -40,6 +40,7 @@ The Personal Finance Management System (PFMS) is a full-stack web/mobile applica
 - Responsive UI or native mobile support
 
 🧱 Tech Stack
+🧱 Tech Stack
 |  |  | 
 |  |  | 
 |  |  | 
@@ -49,6 +50,11 @@ The Personal Finance Management System (PFMS) is a full-stack web/mobile applica
 |  |  | 
 |  |  | 
 |  |  | 
+
+
+
+
+
 
 
 
