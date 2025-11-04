@@ -1,57 +1,80 @@
-Personal Finance Management System (PFMS)
+# 💰 Personal Finance Management System (PFMS)
 
-📝 Project Overview
-The Personal Finance Management System (PFMS) is a full-stack web/mobile application designed to empower users to track, plan, and manage their finances with ease. It promotes financial literacy and budgeting discipline through intuitive tools and data-driven insights.
+A full-stack web/mobile application designed to help users track, plan, and manage their finances with ease. PFMS promotes financial literacy and budgeting discipline through intuitive tools and data-driven insights.
 
-🎯 Key Features
-- 🔐 User Authentication & Security
-- Sign up/login with bcrypt password encryption
-- Secure session management using JWT or OAuth2
+---
 
-- 📊 Dashboard Overview
+## 📝 Project Overview
+
+PFMS empowers users to take control of their financial life. From tracking expenses to setting savings goals, it offers a comprehensive suite of features to build smarter money habits.
+
+---
+
+## 🎯 Key Features
+
+### 🔐 User Authentication & Security
+- Secure sign-up/login with **bcrypt** password encryption
+- Session management using **JWT** or **OAuth2**
+
+### 📊 Dashboard Overview
 - Snapshot of current balance, income vs. expenses
-- Interactive charts (pie, bar) for spending categories
+- Interactive **pie** and **bar charts** for spending categories
 
-- 💸 Expense & Income Tracking
-- Add/edit/delete transactions
-- Attach receipts or notes
+### 💸 Expense & Income Tracking
+- Add, edit, and delete transactions
+- Attach receipts or notes for better context
 
-- 📅 Budgeting Tools
+### 📅 Budgeting Tools
 - Set monthly/yearly budgets by category
-- Alerts on overspending
+- Receive alerts on overspending
 
-- 🗂️ Categorization
+### 🗂️ Categorization
 - Automatic/manual transaction categorization (e.g., groceries, rent)
 
-- 📈 Analytics & Reports
-- Monthly/yearly summaries
-- Export reports in PDF/CSV format
+### 📈 Analytics & Reports
+- Monthly and yearly financial summaries
+- Export reports in **PDF** or **CSV** format
 
-- 🎯 Goal Setting
-- Define savings goals (e.g., travel, emergency fund)
+### 🎯 Goal Setting
+- Define and track savings goals (e.g., travel, emergency fund)
 
-- 🏦 Bank Integration (Optional)
-- Connect to banks via APIs like Plaid or Yodlee
+### 🏦 Bank Integration *(Optional)*
+- Connect to banks via APIs like **Plaid** or **Yodlee**
 
-- 🔁 Recurring Payments
-- Track bills and subscriptions
+### 🔁 Recurring Payments
+- Track bills and subscriptions with ease
 
-- 📱 Mobile Compatibility
-- Responsive UI or native mobile support
+### 📱 Mobile Compatibility
+- Responsive UI for mobile browsers or native mobile support
 
+---
 
-🚀 Deployment
-- Frontend: Deployed via Vercel
-- Backend: Hosted on Node.js server
-- Database: MySQL (local or cloud-hosted)
-- Version Control: Git + GitHub
+## 🚀 Deployment
 
-✅ Benefits
+| Component     | Platform/Tool         |
+|---------------|------------------------|
+| **Frontend**  | Vercel                 |
+| **Backend**   | Node.js Server         |
+| **Database**  | MySQL (local/cloud)    |
+| **Version Control** | Git + GitHub     |
+
+---
+
+## ✅ Benefits
+
 - Promotes disciplined financial habits
 - Reduces unnecessary spending
 - Provides actionable financial insights
 - Encourages goal-based saving
 
+---
 
+## 📦 Tech Stack
 
+- **Frontend**: HTML, CSS, JavaScript, React.js
+- **Backend**: Node.js, Express.js
+- **Database**: MySQL
+- **Authentication**: JWT, OAuth2, bcrypt
+- **Visualization**: Chart.js or D3.js
+- **Optional Integrations**: Plaid, Yodlee
 
