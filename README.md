@@ -129,4 +129,4 @@ both apps, then builds both Docker images, on every push/PR to `main`.
 
 ## License
 
-MIT — built as a portfolio/demonstration project.
+AGPL - 3.0 License — built as a portfolio/demonstration project.
