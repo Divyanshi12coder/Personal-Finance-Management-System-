@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/*
+  FinPilot AI design tokens.
+  Direction: a "ledger at night" feel — deep ink background, brass/gold
+  accent evoking currency and coin, signal green/rose reserved strictly
+  for money moving in/out (income vs. expense), so color always carries
+  meaning rather than decoration. Display numbers use a geometric,
+  slightly technical face (Space Grotesk) since figures are the real
+  content of this product; body text stays in Inter for readability.
+*/
+@theme {
+  --color-ink-950: #0b0f17;
+  --color-ink-900: #10141d;
+  --color-ink-800: #161c28;
+  --color-ink-700: #1f2733;
+  --color-ink-600: #2b3543;
+  --color-ink-400: #64748b;
+  --color-ink-200: #cbd5e1;
+  --color-ink-50: #f6f7f9;
+
+  --color-brass-500: #c9a227;
+  --color-brass-400: #d8b94f;
+  --color-brass-600: #a8841a;
+
+  --color-signal-green: #22c55e;
+  --color-signal-rose: #f43f5e;
+  --color-signal-amber: #f59e0b;
+
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+html {
+  font-family: var(--font-body);
+}
+
+body {
+  @apply bg-ink-50 text-ink-900 dark:bg-ink-950 dark:text-ink-50;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "tnum" 1; /* tabular numbers for money alignment */
+}
+
+/* Respect reduced-motion preferences across the app */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible keyboard focus ring everywhere, including inside dark surfaces */
+:focus-visible {
+  outline: 2px solid var(--color-brass-500);
+  outline-offset: 2px;
+}

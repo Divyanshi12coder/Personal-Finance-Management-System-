@@ -1,0 +1,225 @@
+// FinPilot AI — Prisma Schema
+// Money is always stored as an integer in the currency's minor unit
+// (e.g. paise/cents) to avoid floating point rounding errors.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum BudgetPeriod {
+  MONTHLY
+}
+
+enum ReceiptStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+enum TransactionSource {
+  MANUAL
+  RECEIPT_SCAN
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  currency      String   @default("INR")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  categories       Category[]
+  transactions     Transaction[]
+  budgets          Budget[]
+  goals            SavingsGoal[]
+  receipts         Receipt[]
+  conversations    AiConversation[]
+  auditLogs        AuditLog[]
+  refreshTokens    RefreshToken[]
+
+  @@map("users")
+}
+
+// Refresh tokens are persisted (hashed) so they can be revoked/rotated
+// individually and audited, instead of relying purely on a Redis blacklist.
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Category {
+  id       String           @id @default(uuid())
+  userId   String?          // null => system-defined default category
+  name     String
+  icon     String           @default("tag")
+  type     TransactionType
+  isSystem Boolean          @default(false)
+  createdAt DateTime        @default(now())
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@unique([userId, name, type])
+  @@index([userId])
+  @@map("categories")
+}
+
+model Transaction {
+  id          String            @id @default(uuid())
+  userId      String
+  categoryId  String
+  type        TransactionType
+  amountMinor Int               // stored in minor units (e.g. paise)
+  currency    String            @default("INR")
+  merchant    String?
+  note        String?
+  occurredOn  DateTime          @db.Date
+  source      TransactionSource @default(MANUAL)
+  deletedAt   DateTime?         // soft delete — financial records are never hard-deleted
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category  @relation(fields: [categoryId], references: [id])
+  receipt  Receipt?
+
+  @@index([userId, occurredOn])
+  @@index([userId, categoryId])
+  @@index([userId, type])
+  @@map("transactions")
+}
+
+model Budget {
+  id          String       @id @default(uuid())
+  userId      String
+  categoryId  String
+  limitMinor  Int
+  period      BudgetPeriod @default(MONTHLY)
+  periodStart DateTime     @db.Date // first day of the budgeted month
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId, periodStart])
+  @@index([userId, periodStart])
+  @@map("budgets")
+}
+
+model SavingsGoal {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String
+  targetMinor  Int
+  currentMinor Int      @default(0)
+  targetDate   DateTime? @db.Date
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contributions GoalContribution[]
+
+  @@index([userId])
+  @@map("savings_goals")
+}
+
+model GoalContribution {
+  id            String   @id @default(uuid())
+  goalId        String
+  amountMinor   Int
+  contributedOn DateTime @db.Date
+  createdAt     DateTime @default(now())
+
+  goal SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("goal_contributions")
+}
+
+model Receipt {
+  id              String        @id @default(uuid())
+  userId          String
+  transactionId   String?       @unique // set once the extraction is confirmed
+  imageUrl        String
+  extractedData   Json?         // raw structured OCR/LLM extraction output
+  confidenceScore Float?
+  status          ReceiptStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([userId])
+  @@map("receipts")
+}
+
+model AiConversation {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String   @default("New conversation")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+
+  @@index([userId])
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id               String      @id @default(uuid())
+  conversationId   String
+  role             MessageRole
+  content          String
+  // The exact aggregated financial facts used to ground this answer —
+  // stored for auditability/reproducibility of AI responses.
+  contextSnapshot  Json?
+  createdAt        DateTime    @default(now())
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("ai_messages")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}

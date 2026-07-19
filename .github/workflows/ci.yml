@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api-lint-and-unit:
+    name: API — Lint & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install --workspace=apps/api --include-workspace-root
+      - name: Generate Prisma client
+        run: npm run prisma:generate --workspace=apps/api
+      - name: Lint
+        run: npm run lint --workspace=apps/api
+      - name: Unit tests
+        run: npm run test --workspace=apps/api
+
+  api-integration:
+    name: API — Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install --workspace=apps/api --include-workspace-root
+      - name: Generate Prisma client
+        run: npm run prisma:generate --workspace=apps/api
+      - name: Integration tests (spins up Postgres via Testcontainers)
+        run: npm run test:integration --workspace=apps/api
+        env:
+          REDIS_URL: redis://localhost:6379
+
+  api-build:
+    name: API — Build
+    runs-on: ubuntu-latest
+    needs: [api-lint-and-unit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install --workspace=apps/api --include-workspace-root
+      - run: npm run prisma:generate --workspace=apps/api
+      - run: npm run build --workspace=apps/api
+
+  web-lint-and-build:
+    name: Web — Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install --workspace=apps/web --include-workspace-root
+      - run: npm run lint --workspace=apps/web
+      - run: npm run build --workspace=apps/web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [api-build, web-lint-and-build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f apps/api/Dockerfile -t finpilot-api:ci .
+      - name: Build Web image
+        run: docker build -f apps/web/Dockerfile -t finpilot-web:ci .
